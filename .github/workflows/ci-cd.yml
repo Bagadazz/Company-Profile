@@ -1,0 +1,82 @@
+name: CI/CD for React App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+
+    env:
+      APP_NAME: react-todo-app
+      OPENSHIFT_NAMESPACE: omidiyanto-dev
+      IMAGE_REGISTRY: quay.io
+      IMAGE_TAGS: latest                       
+      OPENSHIFT_SERVER: "https://api.sandbox-m4.g2pi.p1.openshiftapps.com:6443"
+      OPENSHIFT_TOKEN: "sha256~FQM4Gk0m2YURtEy2swGmt1_xUFHwjSEfu-AxD9Ij7uw"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build and Tag Image
+      run: |
+        IMAGE_NAME=react-todo-app
+        TAG=latest
+        docker build -t quay.io/omidiyanto/$IMAGE_NAME:$TAG .
+
+    - name: Log in to Quay.io
+      env:
+        QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+        QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      run: |
+        echo "omi120133550077" | docker login quay.io -u "omidiyanto" --password-stdin
+
+    - name: Push Image to Quay.io
+      run: |
+        IMAGE_NAME=react-todo-app
+        TAG=latest
+        docker push quay.io/omidiyanto/$IMAGE_NAME:$TAG
+
+    - name: Login to OpenShift
+      run: |
+        oc login ${{ env.OPENSHIFT_SERVER }} \
+          --token=${{ env.OPENSHIFT_TOKEN }} \
+          --insecure-skip-tls-verify
+
+    - name: Create New Deployment or Update Container Image for Existing Deployment
+      run: |
+        if oc get deployment ${{ env.APP_NAME }} -n ${{ env.OPENSHIFT_NAMESPACE }} >/dev/null 2>&1; then
+          echo "Deployment ${{ env.APP_NAME }} exists."
+          echo "Updating container image for deployment ${{ env.APP_NAME }} ..."
+          oc set image deployment/${{ env.APP_NAME }} ${{ env.APP_NAME }}=${{ env.IMAGE_REGISTRY }}/omidiyanto/${{ env.APP_NAME }}:${{ env.IMAGE_TAGS }} -n ${{ env.OPENSHIFT_NAMESPACE }}
+          echo "Image update complete."
+          oc rollout restart deployment/${{ env.APP_NAME }} -n ${{ env.OPENSHIFT_NAMESPACE }}
+          echo "Rolling update triggered."
+        else
+          echo "Deployment ${{ env.APP_NAME }} does not exist"
+          echo "Creating new deployment..."
+          oc create deployment ${{ env.APP_NAME }} --image=${{ env.IMAGE_REGISTRY }}/omidiyanto/${{ env.APP_NAME }}:${{ env.IMAGE_TAGS }} -n ${{ env.OPENSHIFT_NAMESPACE }}
+        fi
+
+    - name: Create Service to Expose defined port
+      run: |
+        if oc get service ${{ env.APP_NAME }} -n ${{ env.OPENSHIFT_NAMESPACE }} >/dev/null 2>&1; then
+          echo "Service ${{ env.APP_NAME }} exists. Skipping..."
+        else
+          echo "Service ${{ env.APP_NAME }} does not exist."
+          echo "Creating new Service..."
+          oc expose deployment ${{ env.APP_NAME }} --port=8080 -n ${{ env.OPENSHIFT_NAMESPACE }}
+        fi
+
+    - name: Create Route for Public Access
+      run: |
+        if oc get route ${{ env.APP_NAME }} -n ${{ env.OPENSHIFT_NAMESPACE }} >/dev/null 2>&1; then
+          echo "Route ${{ env.APP_NAME }} exists. Skipping..."
+        else
+          echo "Route ${{ env.APP_NAME }} does not exist."
+          echo "Creating new Route..."
+          oc create route edge --service=${{ env.APP_NAME }} --insecure-policy=Redirect -n ${{ env.OPENSHIFT_NAMESPACE }}
+        fi
