@@ -25,20 +25,20 @@ jobs:
       run: |
         IMAGE_NAME=react-todo-app
         TAG=latest
-        docker build -t quay.io/omidiyanto/$IMAGE_NAME:$TAG .
+        podman build -t quay.io/omidiyanto/$IMAGE_NAME:$TAG .
 
     - name: Log in to Quay.io
       env:
         QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       run: |
-        echo "omi120133550077" | docker login quay.io -u "omidiyanto" --password-stdin
+        echo "omi120133550077" | podman login quay.io -u "omidiyanto" --password-stdin
 
     - name: Push Image to Quay.io
       run: |
         IMAGE_NAME=react-todo-app
         TAG=latest
-        docker push quay.io/omidiyanto/$IMAGE_NAME:$TAG
+        podman push quay.io/omidiyanto/$IMAGE_NAME:$TAG
 
     - name: Login to OpenShift
       run: |
