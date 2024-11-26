@@ -11,7 +11,7 @@ jobs:
 
     env:
       APP_NAME: company-profile-container
-      OPENSHIFT_NAMESPACE: ${{ secrets.QUAY_USERNAME }}-dev
+      OPENSHIFT_NAMESPACE: risabafatir-dev
       IMAGE_REGISTRY: quay.io
       IMAGE_TAGS: latest                       
       OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }} 
@@ -42,8 +42,8 @@ jobs:
 
     - name: Login to OpenShift
       run: |
-        oc login ${{ env.OPENSHIFT_SERVER }} \
-          --token=${{ env.OPENSHIFT_TOKEN }} \
+        oc login ${{ secrets.OPENSHIFT_SERVER }} \
+          --token=${{ secrets.OPENSHIFT_TOKEN }} \
           --insecure-skip-tls-verify
 
     - name: Create New Deployment or Update Container Image for Existing Deployment
