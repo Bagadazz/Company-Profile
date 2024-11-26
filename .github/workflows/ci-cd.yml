@@ -25,20 +25,20 @@ jobs:
       run: |
         IMAGE_NAME=company-profile-container
         TAG=latest
-        podman build -t quay.io/omidiyanto/$IMAGE_NAME:$TAG .
+        podman build -t quay.io/risabafatir/$IMAGE_NAME:$TAG .
 
     - name: Log in to Quay.io
       env:
         QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       run: |
-        echo "omi120133550077" | podman login quay.io -u "omidiyanto" --password-stdin
+        echo "risabafatir" | podman login quay.io -u "risabafatir" --password-stdin
 
     - name: Push Image to Quay.io
       run: |
         IMAGE_NAME=company-profile-container
         TAG=latest
-        podman push quay.io/omidiyanto/$IMAGE_NAME:$TAG
+        podman push quay.io/risabafatir/$IMAGE_NAME:$TAG
 
     - name: Login to OpenShift
       run: |
@@ -51,14 +51,14 @@ jobs:
         if oc get deployment ${{ env.APP_NAME }} -n ${{ env.OPENSHIFT_NAMESPACE }} >/dev/null 2>&1; then
           echo "Deployment ${{ env.APP_NAME }} exists."
           echo "Updating container image for deployment ${{ env.APP_NAME }} ..."
-          oc set image deployment/${{ env.APP_NAME }} ${{ env.APP_NAME }}=${{ env.IMAGE_REGISTRY }}/omidiyanto/${{ env.APP_NAME }}:${{ env.IMAGE_TAGS }} -n ${{ env.OPENSHIFT_NAMESPACE }}
+          oc set image deployment/${{ env.APP_NAME }} ${{ env.APP_NAME }}=${{ env.IMAGE_REGISTRY }}/risabafatir/${{ env.APP_NAME }}:${{ env.IMAGE_TAGS }} -n ${{ env.OPENSHIFT_NAMESPACE }}
           echo "Image update complete."
           oc rollout restart deployment/${{ env.APP_NAME }} -n ${{ env.OPENSHIFT_NAMESPACE }}
           echo "Rolling update triggered."
         else
           echo "Deployment ${{ env.APP_NAME }} does not exist"
           echo "Creating new deployment..."
-          oc create deployment ${{ env.APP_NAME }} --image=${{ env.IMAGE_REGISTRY }}/omidiyanto/${{ env.APP_NAME }}:${{ env.IMAGE_TAGS }} -n ${{ env.OPENSHIFT_NAMESPACE }}
+          oc create deployment ${{ env.APP_NAME }} --image=${{ env.IMAGE_REGISTRY }}/risabafatir/${{ env.APP_NAME }}:${{ env.IMAGE_TAGS }} -n ${{ env.OPENSHIFT_NAMESPACE }}
         fi
 
     - name: Create Service to Expose defined port
