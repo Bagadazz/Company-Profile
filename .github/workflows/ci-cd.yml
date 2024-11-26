@@ -1,4 +1,4 @@
-name: CI/CD for React App
+name: CI/CD for Company Profile App
 
 on:
   push:
@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      APP_NAME: react-todo-app
-      OPENSHIFT_NAMESPACE: omidiyanto-dev
+      APP_NAME: company-profile-container
+      OPENSHIFT_NAMESPACE: risabafatir-dev
       IMAGE_REGISTRY: quay.io
       IMAGE_TAGS: latest                       
-      OPENSHIFT_SERVER: "https://api.sandbox-m4.g2pi.p1.openshiftapps.com:6443"
-      OPENSHIFT_TOKEN: "sha256~FQM4Gk0m2YURtEy2swGmt1_xUFHwjSEfu-AxD9Ij7uw"
+      OPENSHIFT_SERVER: "https://api.sandbox-m2.ll9k.p1.openshiftapps.com:6443" 
+      OPENSHIFT_TOKEN: "sha256~CLHpdqNJxjQPosHLGGp5TlXtQzB9gvjW1ZWXlrklH4M" 
 
     steps:
     - name: Checkout code
@@ -23,7 +23,7 @@ jobs:
 
     - name: Build and Tag Image
       run: |
-        IMAGE_NAME=react-todo-app
+        IMAGE_NAME=company-profile-container
         TAG=latest
         podman build -t quay.io/omidiyanto/$IMAGE_NAME:$TAG .
 
@@ -36,7 +36,7 @@ jobs:
 
     - name: Push Image to Quay.io
       run: |
-        IMAGE_NAME=react-todo-app
+        IMAGE_NAME=company-profile-container
         TAG=latest
         podman push quay.io/omidiyanto/$IMAGE_NAME:$TAG
 
